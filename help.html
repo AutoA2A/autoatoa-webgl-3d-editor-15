@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>帮助与教程</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+    --primary:#1976d2;
+    --secondary:#42a5f5;
+    --font:'Helvetica Neue',Arial,sans-serif;
+    --radius:8px;
+    --button-radius:4px;
+    --spacing:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#fafafa;color:#222}
+header{background:var(--primary);color:#fff;padding:0 var(--spacing);}
+.nav{display:flex;justify-content:space-between;align-items:center;height:48px;}
+.nav .logo{font-weight:600;font-size:1.1rem;}
+.nav-links{display:flex;gap:var(--spacing);}
+.nav-links a{color:#fff;text-decoration:none;font-size:0.95rem;}
+.nav-toggle{display:none;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;}
+@media (max-width:600px){
+    .nav-links{position:absolute;top:48px;left;0;right:0;background:var(--primary);flex-direction:none;display:none;}
+    .nav-links.open{display:flex;flex-direction:column;align-items:stretch;}
+    .nav-links.open a{padding:var(--spacing);border-top:1px solid rgba(255,255,255,0.1);}
+    .nav-toggle{display:block;}
+}
+main{padding:var(--spacing);min-height:calc(100vh - 48px);}
+.card{background:#fff;border-radius:var(--radius);box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:var(--spacing);margin-bottom:var(--spacing);}
+.btn{display:inline-block;background:var(--secondary);color:#fff;border:none;border-radius:var(--button-radius);padding:8px 12px;font-size:0.9rem;cursor:pointer;}
+.btn:hover{background:#64b5f6;}
+</style>
+<meta name="description" content="交互式教程，指导如何使用编辑器功能。"><meta name="keywords" content="WebGL,3D模型,在线编辑,模型库,材质编辑,实时预览,导入导出,交互设计"><meta name="robots" content="index,follow,max-image-preview:large"><meta property="og:type" content="website"><meta property="og:title" content="帮助与教程"><meta property="og:description" content="交互式教程，指导如何使用编辑器功能。"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="帮助与教程"><meta name="twitter:description" content="交互式教程，指导如何使用编辑器功能。"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"帮助与教程","description":"交互式教程，指导如何使用编辑器功能。","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script><style data-a2a="basecss">*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}img,canvas,svg,video,table{max-width:100%;height:auto}pre,code{white-space:pre-wrap;word-break:break-word}[data-a2a="header"]{width:100%}@media(max-width:640px){body{font-size:15px}}</style></head>
+<body>
+<header>
+<div class="nav">
+<div class="logo">WebGL 3D 编辑器</div>
+<div class="nav-links">
+<a href="index.html">首页</a>
+<a href="library.html">模型库</a>
+<a href="settings.html">设置</a>
+<a href="help.html">帮助与教程</a>
+<a href="about.html">关于</a>
+<a href="export.html">导出模型</a>
+<a href="import.html">导入模型</a>
+<a href="history.html">历史与版本</a>
+</div>
+<button class="nav-toggle" aria-label="切换菜单" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+</div>
+</header>
+<main>
+
+<section class="card">
+    <h2>帮助与教程</h2>
+    <p>本交互式教程将分步演示如何使用 WebGL 3D 编辑器的主要功能。请使用下面的「下一步」按钮浏览每个步骤，必要时可点击「打开编辑器」在新标签页中实际操作。</p>
+    <button class="btn" id="openEditorBtn">打开编辑器 (index.html)</button>
+</section>
+
+<div id="tutorialContainer" style="margin-top:var(--spacing);"></div>
+
+<script>
+(() => {
+    const steps = [
+        {
+            title: "1️⃣ 加载模型",
+            content: "点击左侧工具栏的「导入模型」按钮，选择本地的 GLTF/OBJ 文件，文件会自动加载到场景中。<br>（若已在编辑器打开，可直接在编辑器页面操作）",
+            action: () => { window.open('import.html','_blank'); }
+        },
+        {
+            title: "2️⃣ 选择与移动对象",
+            content: "在场景视图中点击模型即可选中。使用右侧的移动工具（快捷键 <code>W</code>）拖动模型到合适位置。",
+            action: null
+        },
+        {
+            title: "3️⃣ 旋转与缩放",
+            content: "使用旋转工具（<code>E</code>）或缩放工具（<code>R</code>）对选中的模型进行细节调整。",
+            action: null
+        },
+        {
+            title: "4️⃣ 材质编辑",
+            content: "在右侧面板中可以更改模型的颜色、金属度、粗糙度等材质属性，实时预览效果。",
+            action: null
+        },
+        {
+            title: "5️⃣ 添加光源",
+            content: "点击「添加光源」按钮，可在场景中放置点光、平行光或环境光，调节光照强度与颜色。",
+            action: null
+        },
+        {
+            title: "6️⃣ 动画预览",
+            content: "如果模型包含动画，点击「播放」按钮即可预览动画效果。也可以在时间轴上拖动关键帧进行编辑。",
+            action: null
+        },
+        {
+            title: "7️⃣ 保存与导出",
+            content: "完成编辑后，点击「导出模型」按钮，可将场景保存为 GLTF 或 OBJ 文件下载到本地。",
+            action: () => { window.open('export.html','_blank'); }
+        },
+        {
+            title: "✅ 完成",
+            content: "恭喜！您已经掌握了基本的编辑流程。随时返回此页面复习，或在编辑器中探索更多高级功能。",
+            action: null
+        }
+    ];
+
+    let current = 0;
+    const container = document.getElementById('tutorialContainer');
+
+    function renderStep() {
+        const step = steps[current];
+        container.innerHTML = `
+            <article class="card">
+                <h3>${step.title}</h3>
+                <p>${step.content}</p>
+                <div style="margin-top:var(--spacing);display:flex;gap:var(--spacing);">
+                    ${current > 0 ? '<button class="btn" id="prevBtn">← 上一步</button>' : ''}
+                    ${current < steps.length - 1 ? '<button class="btn" id="nextBtn">下一步 →</button>' : ''}
+                    ${step.action ? '<button class="btn" id="actionBtn">执行操作</button>' : ''}
+                </div>
+            </article>
+        `;
+
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const actionBtn = document.getElementById('actionBtn');
+
+        if (prevBtn) prevBtn.onclick = () => { current--; renderStep(); };
+        if (nextBtn) nextBtn.onclick = () => { current++; renderStep(); };
+        if (actionBtn) actionBtn.onclick = step.action;
+    }
+
+    document.getElementById('openEditorBtn').onclick = () => {
+        window.open('index.html','_blank');
+    };
+
+    renderStep();
+})();
+</script>
+
+</main>
+<footer data-a2a="footer" style="margin-top:48px;padding:28px 16px;border-top:1px solid rgba(127,127,127,.16);text-align:center;font-family:system-ui,-apple-system,'PingFang SC',sans-serif;line-height:1.9;color:#8a8f99;background:transparent"><a href="https://www.autoa2a.org" target="_blank" rel="noopener" style="display:inline-block;margin-bottom:10px"><img src="https://agent.oagi.com.cn/uploads/202606/29ea3ed5413830b3.png" alt="AutoA2A" style="height:36px;vertical-align:middle;border:0"></a><div style="font-size:13.5px;color:#6b7280;max-width:760px;margin:0 auto 6px">✅️ <b>AutoA2A</b> · 智能体互连 Agent to Agent 平台——让智能体无缝发现、协商、协作与安全交换数据，开启 AI 即服务新时代。</div><div style="font-size:13px">本网站由 <a href="https://www.autoa2a.org" target="_blank" rel="noopener" style="color:#f2603c;text-decoration:none;font-weight:600">www.autoa2a.org</a> 多个 AI 协作生成</div><div style="font-size:12px;color:#aab;margin-top:6px">Copyright © 2025 - 2026 AutoA2A. All Rights Reserved. A2A版权所有</div></footer></body>
+</html>
