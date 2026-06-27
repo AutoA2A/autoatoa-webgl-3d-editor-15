@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>首页 - WebGL 3D 编辑器</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+    --primary:#1976d2;
+    --secondary:#42a5f5;
+    --font:'Helvetica Neue',Arial,sans-serif;
+    --radius:8px;
+    --button-radius:4px;
+    --spacing:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#fafafa;color:#222}
+header{background:var(--primary);color:#fff;padding:0 var(--spacing);}
+.nav{display:flex;justify-content:space-between;align-items:center;height:48px;}
+.nav .logo{font-weight:600;font-size:1.1rem;}
+.nav-links{display:flex;gap:var(--spacing);}
+.nav-links a{color:#fff;text-decoration:none;font-size:0.95rem;}
+.nav-toggle{display:none;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;}
+@media (max-width:600px){
+    .nav-links{position:absolute;top:48px;left;0;right:0;background:var(--primary);flex-direction:none;display:none;}
+    .nav-links.open{display:flex;flex-direction:column;align-items:stretch;}
+    .nav-links.open a{padding:var(--spacing);border-top:1px solid rgba(255,255,255,0.1);}
+    .nav-toggle{display:block;}
+}
+main{padding:var(--spacing);min-height:calc(100vh - 48px);}
+.card{background:#fff;border-radius:var(--radius);box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:var(--spacing);margin-bottom:var(--spacing);}
+.btn{display:inline-block;background:var(--secondary);color:#fff;border:none;border-radius:var(--button-radius);padding:8px 12px;font-size:0.9rem;cursor:pointer;}
+.btn:hover{background:#64b5f6;}
+</style>
+<meta name="description" content="主编辑器页面，实时渲染模型，支持变换、材质编辑、动画预览。"><meta name="keywords" content="WebGL,3D模型,在线编辑,模型库,材质编辑,实时预览,导入导出,交互设计"><meta name="robots" content="index,follow,max-image-preview:large"><meta property="og:type" content="website"><meta property="og:title" content="首页 - WebGL 3D 编辑器"><meta property="og:description" content="主编辑器页面，实时渲染模型，支持变换、材质编辑、动画预览。"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="首页 - WebGL 3D 编辑器"><meta name="twitter:description" content="主编辑器页面，实时渲染模型，支持变换、材质编辑、动画预览。"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"首页 - WebGL 3D 编辑器","description":"主编辑器页面，实时渲染模型，支持变换、材质编辑、动画预览。","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script><style data-a2a="basecss">*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}img,canvas,svg,video,table{max-width:100%;height:auto}pre,code{white-space:pre-wrap;word-break:break-word}[data-a2a="header"]{width:100%}@media(max-width:640px){body{font-size:15px}}</style></head>
+<body>
+<header>
+<div class="nav">
+<div class="logo">WebGL 3D 编辑器</div>
+<div class="nav-links">
+<a href="index.html">首页</a>
+<a href="library.html">模型库</a>
+<a href="settings.html">设置</a>
+<a href="help.html">帮助与教程</a>
+<a href="about.html">关于</a>
+<a href="export.html">导出模型</a>
+<a href="import.html">导入模型</a>
+<a href="history.html">历史与版本</a>
+</div>
+<button class="nav-toggle" aria-label="切换菜单" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+</div>
+</header>
+<main>
+
+<article class="card">
+    <h3>实时 3D 编辑器</h3>
+    <canvas id="glcanvas" width="800" height="600" style="width:100%;height:auto;background:#e0e0e0;border-radius:var(--radius);"></canvas>
+    <div style="margin-top:var(--spacing);display:flex;flex-wrap:wrap;gap:var(--spacing);">
+        <label style="flex:1 1 120px;">
+            旋转 X
+            <input type="range" id="rotX" min="0" max="360" value="0" style="width:100%;">
+        </label>
+        <label style="flex:1 1 120px;">
+            旋转 Y
+            <input type="range" id="rotY" min="0" max="360" value="0" style="width:100%;">
+        </label>
+        <label style="flex:1 1 120px;">
+            旋转 Z
+            <input type="range" id="rotZ" min="0" max="360" value="0" style="width:100%;">
+        </label>
+        <label style="flex:1 1 120px;">
+            颜色
+            <input type="color" id="colorPicker" value="#1976d2" style="width:100%;padding:4px;">
+        </label>
+    </div>
+    <div style="margin-top:var(--spacing);display:flex;gap:var(--spacing);flex-wrap:wrap;">
+        <a href="import.html?id=" class="btn">导入模型</a>
+        <a href="export.html?id=" class="btn">导出模型</a>
+        <a href="library.html?id=" class="btn">模型库</a>
+        <a href="settings.html?id=" class="btn">设置</a>
+        <a href="history.html?id=" class="btn">历史记录</a>
+        <a href="help.html?id=" class="btn">帮助</a>
+        <a href="about.html?id=" class="btn">关于</a>
+    </div>
+</article>
+
+<script>
+(() => {
+    const canvas = document.getElementById('glcanvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    if (!gl) {
+        canvas.parentElement.innerHTML = '<p>抱歉，您的浏览器不支持 WebGL。</p>';
+        return;
+    }
+
+    // 顶点着色器
+    const vs = `
+        attribute vec3 aPosition;
+        uniform mat4 uMatrix;
+        void main() {
+            gl_Position = uMatrix * vec4(aPosition, 1.0);
+        }
+    `;
+    // 片元着色器
+    const fs = `
+        precision mediump float;
+        uniform vec4 uColor;
+        void main() {
+            gl_FragColor = uColor;
+        }
+    `;
+    function compileShader(source, type) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
+        }
+        return shader;
+    }
+    const vertexShader = compileShader(vs, gl.VERTEX_SHADER);
+    const fragmentShader = compileShader(fs, gl.FRAGMENT_SHADER);
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program link error:', gl.getProgramInfoLog(program));
+        return;
+    }
+    gl.useProgram(program);
+
+    // 位置属性
+    const positionLoc = gl.getAttribLocation(program, 'aPosition');
+    const posBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+    const positions = [
+        0, 0.5, 0,
+        -0.5, -0.5, 0,
+        0.5, -0.5, 0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(positionLoc);
+    gl.vertexAttribPointer(positionLoc, 3, gl.FLOAT, false, 0, 0);
+
+    // uniform 位置
+    const matrixLoc = gl.getUniformLocation(program, 'uMatrix');
+    const colorLoc = gl.getUniformLocation(program, 'uColor');
+
+    let then = 0;
+    function draw(now) {
+        now *= 0.001; // 转换为秒
+        const deltaTime = now - then;
+        then = now;
+
+        const rotX = parseFloat(document.getElementById('rotX').value) * Math.PI / 180;
+        const rotY = parseFloat(document.getElementById('rotY').value) * Math.PI / 180;
+        const rotZ = parseFloat(document.getElementById('rotZ').value) * Math.PI / 180;
+
+        // 构建旋转矩阵 (ZY)
+        function multiply(a,b){
+            const res = new Float32*Y1*X0）
+        const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+        const mX = [1,0,0,0,
+                    0,cosX,-sinX,0,
+                    0,sinX,cosX,0,
+                    0,0,0,1];
+        const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+        const mY = [cosY,0,sinY,0,
+                    0,1,0,0,
+                    -sinY,0,cosY,0,
+                    0,0,0,1];
+        const cosZ = Math.cos(rotZ), sinZ = Math.sin(rotZ);
+        const mZ = [cosZ,-sinZ,0,0,
+                    sinZ,cosZ,0,0,
+                    0,0,1,0,
+                    0,0,0,1];
+        function multiply(a,b){
+            const res = new Float32Array(16);
+            for(let i=0;i<4;i++){
+                for(let j=0;j<4;j++){
+                    let sum=0;
+                    for(let k=0;k<4;k++){
+                        sum+= a[i*4+k]*b[k*4+j];
+                    }
+                    res[i*4+j]=sum;
+                }
+            }
+            return res;
+        }
+        let m = multiply(mZ, mY);
+        m = multiply(m, mX);
+        gl.uniformMatrix4fv(matrixLoc, false, m);
+
+        const colorInput = document.getElementById('colorPicker').value;
+        const r = parseInt(colorInput.substr(1,2),16)/255;
+        const g = parseInt(colorInput.substr(3,2),16)/255;
+        const b = parseInt(colorInput.substr(5,2),16)/255;
+        gl.uniform4f(colorLoc, r, g, b, 1.0);
+
+        gl.clearColor(0.9,0.9,0.9,1);
+        gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+        gl.drawArrays(gl.TRIANGLES,0,3);
+        requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+})();
+</script>
+
+</main>
+<footer data-a2a="footer" style="margin-top:48px;padding:28px 16px;border-top:1px solid rgba(127,127,127,.16);text-align:center;font-family:system-ui,-apple-system,'PingFang SC',sans-serif;line-height:1.9;color:#8a8f99;background:transparent"><a href="https://www.autoa2a.org" target="_blank" rel="noopener" style="display:inline-block;margin-bottom:10px"><img src="https://agent.oagi.com.cn/uploads/202606/29ea3ed5413830b3.png" alt="AutoA2A" style="height:36px;vertical-align:middle;border:0"></a><div style="font-size:13.5px;color:#6b7280;max-width:760px;margin:0 auto 6px">✅️ <b>AutoA2A</b> · 智能体互连 Agent to Agent 平台——让智能体无缝发现、协商、协作与安全交换数据，开启 AI 即服务新时代。</div><div style="font-size:13px">本网站由 <a href="https://www.autoa2a.org" target="_blank" rel="noopener" style="color:#f2603c;text-decoration:none;font-weight:600">www.autoa2a.org</a> 多个 AI 协作生成</div><div style="font-size:12px;color:#aab;margin-top:6px">Copyright © 2025 - 2026 AutoA2A. All Rights Reserved. A2A版权所有</div></footer></body>
+</html>
