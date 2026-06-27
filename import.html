@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>导入模型</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+    --primary:#1976d2;
+    --secondary:#42a5f5;
+    --font:'Helvetica Neue',Arial,sans-serif;
+    --radius:8px;
+    --button-radius:4px;
+    --spacing:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#fafafa;color:#222}
+header{background:var(--primary);color:#fff;padding:0 var(--spacing);}
+.nav{display:flex;justify-content:space-between;align-items:center;height:48px;}
+.nav .logo{font-weight:600;font-size:1.1rem;}
+.nav-links{display:flex;gap:var(--spacing);}
+.nav-links a{color:#fff;text-decoration:none;font-size:0.95rem;}
+.nav-toggle{display:none;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;}
+@media (max-width:600px){
+    .nav-links{position:absolute;top:48px;left;0;right:0;background:var(--primary);flex-direction:none;display:none;}
+    .nav-links.open{display:flex;flex-direction:column;align-items:stretch;}
+    .nav-links.open a{padding:var(--spacing);border-top:1px solid rgba(255,255,255,0.1);}
+    .nav-toggle{display:block;}
+}
+main{padding:var(--spacing);min-height:calc(100vh - 48px);}
+.card{background:#fff;border-radius:var(--radius);box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:var(--spacing);margin-bottom:var(--spacing);}
+.btn{display:inline-block;background:var(--secondary);color:#fff;border:none;border-radius:var(--button-radius);padding:8px 12px;font-size:0.9rem;cursor:pointer;}
+.btn:hover{background:#64b5f6;}
+</style>
+<meta name="description" content="上传本地GLTF/OBJ模型文件，解析后加载到编辑器。"><meta name="keywords" content="WebGL,3D模型,在线编辑,模型库,材质编辑,实时预览,导入导出,交互设计"><meta name="robots" content="index,follow,max-image-preview:large"><meta property="og:type" content="website"><meta property="og:title" content="导入模型"><meta property="og:description" content="上传本地GLTF/OBJ模型文件，解析后加载到编辑器。"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="导入模型"><meta name="twitter:description" content="上传本地GLTF/OBJ模型文件，解析后加载到编辑器。"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"导入模型","description":"上传本地GLTF/OBJ模型文件，解析后加载到编辑器。","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script><style data-a2a="basecss">*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0}img,canvas,svg,video,table{max-width:100%;height:auto}pre,code{white-space:pre-wrap;word-break:break-word}[data-a2a="header"]{width:100%}@media(max-width:640px){body{font-size:15px}}</style></head>
+<body>
+<header>
+<div class="nav">
+<div class="logo">WebGL 3D 编辑器</div>
+<div class="nav-links">
+<a href="index.html">首页</a>
+<a href="library.html">模型库</a>
+<a href="settings.html">设置</a>
+<a href="help.html">帮助与教程</a>
+<a href="about.html">关于</a>
+<a href="export.html">导出模型</a>
+<a href="import.html">导入模型</a>
+<a href="history.html">历史与版本</a>
+</div>
+<button class="nav-toggle" aria-label="切换菜单" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+</div>
+</header>
+<main>
+
+<article class="card">
+  <h3>导入模型</h3>
+  <input type="file" id="modelFile" accept=".gltf,.glb,.obj" style="display:block;margin-bottom:var(--spacing);">
+  <button class="btn" id="importBtn">导入</button>
+  <p id="status" style="margin-top:var(--spacing);color:#555;"></p>
+</article>
+
+<script>
+  const fileInput = document.getElementById('modelFile');
+  const importBtn = document.getElementById('importBtn');
+  const statusEl = document.getElementById('status');
+
+  importBtn.addEventListener('click', async () => {
+    const file = fileInput.files[0];
+    if (!file) {
+      statusEl.textContent = '请先选择一个模型文件';
+      return;
+    }
+    statusEl.textContent = '正在读取文件...';
+    importBtn.disabled = true;
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: file.type });
+
+      // 尝试直接调用打开的编辑器窗口（如果是通过 window.open 打开的）
+      if (window.opener && typeof window.opener.loadModelFromBlob === 'function') {
+        window.opener.loadModelFromBlob(blob);
+        statusEl.textContent = '模型已发送到编辑器';
+        // 可选：关闭此页
+        setTimeout(() => window.close(), 1500);
+        return;
+      }
+
+      // 否则存储到本地并跳转到编辑器页
+      const url = URL.createObjectURL(blob);
+      // 存储 URL 供 index.html 读取（使用 sessionStorage 以避免持久化大数据）
+      sessionStorage.setItem('importedModelUrl', url);
+      sessionStorage.setItem('importedModelType', file.type);
+      // 跳转到主编辑器
+      window.location.href = 'index.html';
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = '读取失败：' + err.message;
+    } finally {
+      importBtn.disabled = false;
+    }
+  });
+
+  // 如果页面是通过编辑器打开的（例如在弹窗中），提供一个取消按钮
+  if (window.opener) {
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '取消';
+    cancelBtn.className = 'btn';
+    cancelBtn.style.marginLeft = var(--spacing);
+    cancelBtn.addEventListener('click', () => window.close());
+    document.querySelector('.card').appendChild(cancelBtn);
+  }
+</script>
+
+</main>
+<footer data-a2a="footer" style="margin-top:48px;padding:28px 16px;border-top:1px solid rgba(127,127,127,.16);text-align:center;font-family:system-ui,-apple-system,'PingFang SC',sans-serif;line-height:1.9;color:#8a8f99;background:transparent"><a href="https://www.autoa2a.org" target="_blank" rel="noopener" style="display:inline-block;margin-bottom:10px"><img src="https://agent.oagi.com.cn/uploads/202606/29ea3ed5413830b3.png" alt="AutoA2A" style="height:36px;vertical-align:middle;border:0"></a><div style="font-size:13.5px;color:#6b7280;max-width:760px;margin:0 auto 6px">✅️ <b>AutoA2A</b> · 智能体互连 Agent to Agent 平台——让智能体无缝发现、协商、协作与安全交换数据，开启 AI 即服务新时代。</div><div style="font-size:13px">本网站由 <a href="https://www.autoa2a.org" target="_blank" rel="noopener" style="color:#f2603c;text-decoration:none;font-weight:600">www.autoa2a.org</a> 多个 AI 协作生成</div><div style="font-size:12px;color:#aab;margin-top:6px">Copyright © 2025 - 2026 AutoA2A. All Rights Reserved. A2A版权所有</div></footer></body>
+</html>
